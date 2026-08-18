@@ -11,6 +11,11 @@ use Vendor\NiasAgeVerification\Enums\Scope;
 
 class AgeVerificationService
 {
+    public function __construct(
+        protected StateStore $stateStore,
+    ) {
+    }
+
     /** @param iterable<IsAgeRestricted> $items */
     public function requiresVerification(iterable $items): bool
     {
@@ -48,6 +53,8 @@ class AgeVerificationService
             'code_challenge' => $codeChallenge,
             'code_challenge_method' => $codeChallengeMethod->value,
         ]);
+
+        $this->stateStore->put($state, $codeVerifier, $nonce);
 
         return $baseUrl . '/authorize?' . $query;
     }
