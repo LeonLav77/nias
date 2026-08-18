@@ -8,6 +8,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Vendor\NiasAgeVerification\AgeVerificationService;
 use Vendor\NiasAgeVerification\Contracts\IsAgeRestricted;
+use Vendor\NiasAgeVerification\Http\Requests\CallbackRequest;
 
 class AgeVerificationController
 {
@@ -16,6 +17,7 @@ class AgeVerificationController
 	) {
 	}
 
+	// TODO: ADD VALIDATION
 	public function start(Request $request): JsonResponse
 	{
 		/** @var class-string<IsAgeRestricted> $model */
@@ -35,9 +37,13 @@ class AgeVerificationController
 		]);
 	}
 
-	public function callback(Request $request): JsonResponse
+	public function callback(CallbackRequest $request): JsonResponse
 	{
-		// TODO: complete() then redirect to the configured frontend target.
+		$result = $this->service->complete(
+			$request->string('code')->toString(),
+			$request->string('state')->toString(),
+		);
+
 		return new JsonResponse([]);
 	}
 }

@@ -8,11 +8,13 @@ use Vendor\NiasAgeVerification\Contracts\IsAgeRestricted;
 use Vendor\NiasAgeVerification\Enums\CodeChallengeMethod;
 use Vendor\NiasAgeVerification\Enums\ResponseType;
 use Vendor\NiasAgeVerification\Enums\Scope;
+use Vendor\NiasAgeVerification\Exceptions\InvalidStateException;
 
 class AgeVerificationService
 {
     public function __construct(
         protected StateStore $stateStore,
+        protected NiasApiHandler $api,
     ) {
     }
 
@@ -61,7 +63,16 @@ class AgeVerificationService
 
     public function complete(string $code, string $state): mixed
     {
-        // TODO: consume state, exchange code, validate ID token, write audit row.
+        $stored = $this->stateStore->pull($state);
+
+        if ($stored === null) {
+            throw new InvalidStateException();
+        }
+
+        $idToken = $this->api->exchangeCode($code, $stored['code_verifier']);
+
+        // TODO: VALIDATE ID TOKEN
+
         return null;
     }
 }

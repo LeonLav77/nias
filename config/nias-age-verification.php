@@ -9,4 +9,6 @@ return [
 	'client_id' => env('NIAS_CLIENT_ID'),
 	'redirect_uri' => env('NIAS_REDIRECT_URI'),
 	'state_ttl' => 900,
+	'http_timeout' => 10,
+	'signing_keys_ttl' => 3600,
 ];
