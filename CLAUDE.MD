@@ -94,7 +94,7 @@ the obligation is a credible check, not an unbypassable one.
 ## Structure
 
 Only two names are part of the public contract and must not move: the
-`IsEligible` interface and the `order_age_confirmations` table. Everything else
+`IsAgeRestricted` interface and the `order_age_confirmations` table. Everything else
 is internal — organise it however the code reads best, and let the layout follow
 the implementation rather than the reverse.
 
@@ -121,19 +121,19 @@ Fixed by Laravel package convention: `config/nias-age-verification.php`,
 
 ## Public API
 
-Only `IsEligible` is a frozen contract — the consuming app implements it, so its
+Only `IsAgeRestricted` is a frozen contract — the consuming app implements it, so its
 shape can't drift:
 
 ```php
 namespace Vendor\NiasAgeVerification\Contracts;
 
-interface IsEligible
+interface IsAgeRestricted
 {
-    public function isEligible(): bool;
+    public function isAgeRestricted(): bool;
 }
 ```
 
-`isEligible()` means *this product is subject to the age-verification
+`isAgeRestricted()` means *this product is subject to the age-verification
 requirement*. It does **not** mean the current buyer has passed verification.
 Keep those two ideas distinct wherever they meet in the code.
 
@@ -153,7 +153,7 @@ calling code needs. It must distinguish approved from denied from errored, since
 the callback redirects differently for each. Whatever it is, it carries no name,
 OIB, or document data.
 
-The cart is passed in as items implementing `IsEligible`, so the package never
+The cart is passed in as items implementing `IsAgeRestricted`, so the package never
 needs to know how the application stores carts.
 
 Avoid baking in a concrete product class, order class, primary-key type, or
@@ -292,7 +292,7 @@ creating. What's worth covering, in rough priority:
 - the token-exchange request body, and that the verifier never reaches the browser
 - callback failure paths and buyer refusal
 - one audit record written, with no personal identity fields
-- `IsEligible` for eligible and non-eligible products, and the shared cart scan
+- `IsAgeRestricted` for eligible and non-eligible products, and the shared cart scan
 - middleware: passes through a cart with nothing eligible; refuses an eligible
   cart with a missing, expired, already-consumed, or false verification
 - the verification is consumed after a successful checkout and cannot be reused

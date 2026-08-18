@@ -1,0 +1,60 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Vendor\NiasAgeVerification;
+
+use Vendor\NiasAgeVerification\Contracts\IsAgeRestricted;
+use Vendor\NiasAgeVerification\Enums\CodeChallengeMethod;
+use Vendor\NiasAgeVerification\Enums\ResponseType;
+use Vendor\NiasAgeVerification\Enums\Scope;
+
+class AgeVerificationService
+{
+    /** @param iterable<IsAgeRestricted> $items */
+    public function requiresVerification(iterable $items): bool
+    {
+        foreach ($items as $item) {
+            if ($item->isAgeRestricted()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function getRedirectUrl(): string
+    {
+        $state = Pkce::state();
+        $nonce = Pkce::nonce();
+        $codeVerifier = Pkce::verifier();
+        $codeChallenge = Pkce::challenge($codeVerifier);
+
+        $baseUrl = config('nias-age-verification.base_url');
+        $clientId = config('nias-age-verification.client_id');
+        $redirectUri = config('nias-age-verification.redirect_uri');
+
+        $responseType = ResponseType::CODE;
+        $scope = Scope::AGE_ALCOHOL;
+        $codeChallengeMethod = CodeChallengeMethod::S256;
+
+        $query = http_build_query([
+            'response_type' => $responseType->value,
+            'client_id' => $clientId,
+            'redirect_uri' => $redirectUri,
+            'scope' => $scope->value,
+            'state' => $state,
+            'nonce' => $nonce,
+            'code_challenge' => $codeChallenge,
+            'code_challenge_method' => $codeChallengeMethod->value,
+        ]);
+
+        return $baseUrl . '/authorize?' . $query;
+    }
+
+    public function complete(string $code, string $state): mixed
+    {
+        // TODO: consume state, exchange code, validate ID token, write audit row.
+        return null;
+    }
+}
