@@ -1,0 +1,21 @@
+{
+    "name": "vendor/nias-age-verification",
+    "description": "Age verification for Laravel",
+    "type": "library",
+    "autoload": {
+        "psr-4": {
+            "Vendor\\NiasAgeVerification\\": "src"
+        }
+    },
+    "authors": [
+        {
+            "name": "LeonLav77",
+            "email": "leonlav77@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "php": "^8.3",
+        "illuminate/support": "^13.0"
+    }
+}

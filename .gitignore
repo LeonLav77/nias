@@ -1,0 +1,43 @@
+# Composer
+/vendor/
+composer.phar
+composer.lock
+
+# Build / tooling caches
+/build/
+/.phpunit.cache/
+.phpunit.result.cache
+.php-cs-fixer.cache
+.phpstan.cache/
+/coverage/
+clover.xml
+coverage.xml
+
+# Node (for any bundled assets)
+/node_modules/
+npm-debug.log
+yarn-error.log
+/public/build/
+/public/hot
+
+# Environment / local config
+.env
+.env.*
+!.env.example
+phpunit.xml
+phpstan.neon
+.php-cs-fixer.php
+
+# Editors
+/.idea/
+/.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs & temp
+*.log
+*.cache
