@@ -132,28 +132,3 @@ a browser redirect from Nias, not a request from your frontend.
 - `redirect_uri` — the full public callback URL, sent both in the authorize
   redirect and again in the token exchange. Both must match the registered
   value exactly.
-
-## Not yet built
-
-The flow stops after the redirect. Still missing:
-
-- **State store** — `getRedirectUrl()` generates a `code_verifier` and drops it.
-  Until it is persisted against `state`, the callback cannot complete the
-  exchange or check `nonce`.
-- **Token exchange and ID-token validation** — RS256 against the JWKS endpoint,
-  checking `iss`, `aud`, `nonce`, and `exp` before reading `age.alcohol`.
-- **`order_age_confirmations`** — the audit record proving the check happened.
-- **Checkout middleware** — the actual security boundary.
-- **Tests.**
-
-## Security notes
-
-- Fail closed. A missing claim, invalid token, timeout, transport error, or
-  refusal all deny the sale.
-- The `code_verifier` never reaches the browser; the exchange is backend-only.
-- Authorization codes are single-use and short-lived.
-- Never log codes, verifiers, or ID tokens.
-- `sub` is a pairwise pseudonym, different per shop. It cannot identify a person
-  and is not needed for the age decision.
-- Store no personal data. The lawful purpose is the immediate check plus the
-  minimum audit evidence.
