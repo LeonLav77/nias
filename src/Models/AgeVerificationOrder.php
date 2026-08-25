@@ -16,6 +16,10 @@ class AgeVerificationOrder extends Model
 
 	public $incrementing = false;
 
+	protected $primaryKey = null;
+
+	public $keyType = 'string';
+
 	protected $fillable = [
 		'age_verification_id',
 		'order_id',

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace LeonLav77\NiasAgeVerification;
 
+use LeonLav77\NiasAgeVerification\Contracts\AgeVerifiableOrder;
 use LeonLav77\NiasAgeVerification\Dtos\VerificationResultDto;
 use LeonLav77\NiasAgeVerification\Exceptions\InvalidIdTokenException;
 use LeonLav77\NiasAgeVerification\Models\AgeVerification;
@@ -16,7 +17,7 @@ class AgeVerificationAudit
 		return AgeVerification::record($result);
 	}
 
-	public function attachOrder(string $verificationId, string $orderId): AgeVerification
+	public function attachOrder(string $verificationId, AgeVerifiableOrder $order): AgeVerification
 	{
 		$verification = AgeVerification::find($verificationId);
 
@@ -26,7 +27,7 @@ class AgeVerificationAudit
 
 		AgeVerificationOrder::firstOrCreate([
 			'age_verification_id' => $verification->getKey(),
-			'order_id' => $orderId,
+			'order_id' => $order->getOrderIdentifier(),
 		]);
 
 		return $verification;
