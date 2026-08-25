@@ -25,7 +25,7 @@ class AgeVerificationController
 		/** @var class-string<IsAgeRestricted> $model */
 		$model = config('nias-age-verification.product_model');
 
-		$items = $model::findMany($request->input('ids', []));
+		$items = $model::findMany($request->input('product_ids', []));
 
 		if (! $this->service->requiresVerification($items)) {
 			return new StartVerificationResource(required: false);

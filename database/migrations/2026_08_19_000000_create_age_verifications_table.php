@@ -16,8 +16,8 @@ return new class extends Migration
 			$table->char('token_hash', 64)->unique();
 			$table->boolean('is_adult');
 
-			// Copied from the token's exp so the middleware can judge validity
-			// without decoding the token on every checkout.
+			// When Nias confirmed. The audit fact, never recomputed.
+			$table->timestamp('verified_at');
 			$table->timestamp('expires_at');
 
 			$table->timestamps();
