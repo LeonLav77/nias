@@ -14,6 +14,8 @@ class IdTokenValidator
 {
 	protected const ALGORITHM = 'RS256';
 
+	protected const LEEWAY = 60;
+
 	public function __construct(
 		protected SigningKeyStore $keyStore,
 	) {
@@ -22,6 +24,7 @@ class IdTokenValidator
 	public function validate(string $idToken, ?string $expectedNonce = null): IdTokenClaimsDto
 	{
 		$keys = JWK::parseKeySet($this->keyStore->get(), self::ALGORITHM);
+		JWT::$leeway = self::LEEWAY;
 
 		try {
 			// Verifies the signature and rejects an expired token.
