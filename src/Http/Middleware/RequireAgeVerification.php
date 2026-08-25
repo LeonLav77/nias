@@ -20,6 +20,10 @@ class RequireAgeVerification
 
 	public function handle(Request $request, Closure $next): Response
 	{
+		if (! config('nias-age-verification.enabled')) {
+			return $next($request);
+		}
+
 		/** @var class-string<IsAgeRestricted> $model */
 		$model = config('nias-age-verification.product_model');
 
