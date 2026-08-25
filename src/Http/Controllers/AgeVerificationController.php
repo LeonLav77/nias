@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Vendor\NiasAgeVerification\Http\Controllers;
 
-use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Vendor\NiasAgeVerification\AgeVerificationService;
 use Vendor\NiasAgeVerification\Contracts\IsAgeRestricted;
+use Vendor\NiasAgeVerification\Exceptions\NiasException;
 use Vendor\NiasAgeVerification\Http\Requests\CallbackRequest;
+use Vendor\NiasAgeVerification\Http\Resources\StartVerificationResource;
 
 class AgeVerificationController
 {
@@ -18,7 +20,7 @@ class AgeVerificationController
 	}
 
 	// TODO: ADD VALIDATION
-	public function start(Request $request): JsonResponse
+	public function start(Request $request): StartVerificationResource
 	{
 		/** @var class-string<IsAgeRestricted> $model */
 		$model = config('nias-age-verification.product_model');
@@ -26,24 +28,37 @@ class AgeVerificationController
 		$items = $model::findMany($request->input('ids', []));
 
 		if (! $this->service->requiresVerification($items)) {
-			return new JsonResponse(['required' => false]);
+			return new StartVerificationResource(required: false);
 		}
 
-		$redirectUrl = $this->service->getRedirectUrl();
-
-		return new JsonResponse([
-			'required' => true,
-			'redirect_url' => $redirectUrl,
-		]);
+		return new StartVerificationResource(
+			required: true,
+			redirectUrl: $this->service->getRedirectUrl(),
+		);
 	}
 
-	public function callback(CallbackRequest $request): JsonResponse
+	public function callback(CallbackRequest $request): RedirectResponse
 	{
-		$result = $this->service->complete(
-			$request->string('code')->toString(),
-			$request->string('state')->toString(),
-		);
+		$code = $request->string('code')->toString();
+		$deniedUrl = config('nias-age-verification.callback_denied');
+		$acceptedUrl = config('nias-age-verification.callback_approved');
 
-		return new JsonResponse([]);
+		if ($code === '') {
+			return new RedirectResponse($deniedUrl);
+		}
+
+		try {
+			$result = $this->service->complete($code, $request->string('state')->toString());
+		} catch (NiasException) {
+			return new RedirectResponse($deniedUrl);
+		}
+		
+		if (! $result->isAdult()) {
+			return new RedirectResponse($deniedUrl);
+		}
+
+		return new RedirectResponse(
+			$acceptedUrl . '?' . http_build_query(['verification_id' => $result->verificationId]),
+		);
 	}
 }

@@ -1,10 +1,10 @@
 {
-    "name": "vendor/nias-age-verification",
+    "name": "leonlav77/nias-age-verification",
     "description": "Age verification for Laravel",
     "type": "library",
     "autoload": {
         "psr-4": {
-            "Vendor\\NiasAgeVerification\\": "src"
+            "LeonLav77\\NiasAgeVerification\\": "src"
         }
     },
     "authors": [
@@ -13,16 +13,16 @@
             "email": "leonlav77@gmail.com"
         }
     ],
-    "minimum-stability": "dev",
     "require": {
-        "php": "^8.3",
-        "illuminate/support": "^13.0",
-        "illuminate/http": "^13.0"
+        "php": "^8.1",
+        "illuminate/support": "*",
+        "illuminate/http": "*",
+        "firebase/php-jwt": "*"
     },
     "extra": {
         "laravel": {
             "providers": [
-                "Vendor\\NiasAgeVerification\\NiasAgeVerificationServiceProvider"
+                "LeonLav77\\NiasAgeVerification\\NiasAgeVerificationServiceProvider"
             ]
         }
     }

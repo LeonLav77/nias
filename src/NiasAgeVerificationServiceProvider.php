@@ -6,6 +6,7 @@ namespace Vendor\NiasAgeVerification;
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use Vendor\NiasAgeVerification\Http\Middleware\RequireAgeVerification;
 
 class NiasAgeVerificationServiceProvider extends ServiceProvider
 {
@@ -19,6 +20,12 @@ class NiasAgeVerificationServiceProvider extends ServiceProvider
 		$this->publishes([
 			__DIR__ . '/../config/nias-age-verification.php' => config_path('nias-age-verification.php'),
 		], 'nias-age-verification-config');
+
+		$this->publishes([
+			__DIR__ . '/../database/migrations' => database_path('migrations'),
+		], 'nias-age-verification-migrations');
+
+		Route::aliasMiddleware('nias.age-verification', RequireAgeVerification::class);
 
 		Route::prefix('api/age-verification')
 			->name('nias-age-verification.')

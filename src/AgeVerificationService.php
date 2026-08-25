@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Vendor\NiasAgeVerification;
 
 use Vendor\NiasAgeVerification\Contracts\IsAgeRestricted;
+use Vendor\NiasAgeVerification\Dtos\VerificationResultDto;
 use Vendor\NiasAgeVerification\Enums\CodeChallengeMethod;
 use Vendor\NiasAgeVerification\Enums\ResponseType;
 use Vendor\NiasAgeVerification\Enums\Scope;
@@ -15,6 +16,8 @@ class AgeVerificationService
     public function __construct(
         protected StateStore $stateStore,
         protected NiasApiHandler $api,
+        protected IdTokenValidator $validator,
+        protected AgeVerificationAudit $audit,
     ) {
     }
 
@@ -61,7 +64,7 @@ class AgeVerificationService
         return $baseUrl . '/authorize?' . $query;
     }
 
-    public function complete(string $code, string $state): mixed
+    public function complete(string $code, string $state): VerificationResultDto
     {
         $stored = $this->stateStore->pull($state);
 
@@ -71,8 +74,12 @@ class AgeVerificationService
 
         $idToken = $this->api->exchangeCode($code, $stored['code_verifier']);
 
-        // TODO: VALIDATE ID TOKEN
+        $claims = $this->validator->validate($idToken, $stored['nonce']);
 
-        return null;
+        $result = new VerificationResultDto($claims, $idToken);
+
+        $verification = $this->audit->record($result);
+
+        return $result->withVerificationId($verification->getKey());
     }
 }

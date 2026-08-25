@@ -13,11 +13,9 @@ class CallbackRequest extends FormRequest
 		return true;
 	}
 
-
 	public function rules(): array
 	{
 		return [
-			'code' => ['required', 'string'],
 			'state' => ['required', 'string'],
 		];
 	}
