@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Vendor\NiasAgeVerification;
+namespace LeonLav77\NiasAgeVerification;
 
-use Vendor\NiasAgeVerification\Contracts\IsAgeRestricted;
-use Vendor\NiasAgeVerification\Dtos\VerificationResultDto;
-use Vendor\NiasAgeVerification\Enums\CodeChallengeMethod;
-use Vendor\NiasAgeVerification\Enums\ResponseType;
-use Vendor\NiasAgeVerification\Enums\Scope;
-use Vendor\NiasAgeVerification\Exceptions\InvalidStateException;
+use LeonLav77\NiasAgeVerification\Contracts\IsAgeRestricted;
+use LeonLav77\NiasAgeVerification\Dtos\VerificationResultDto;
+use LeonLav77\NiasAgeVerification\Enums\CodeChallengeMethod;
+use LeonLav77\NiasAgeVerification\Enums\ResponseType;
+use LeonLav77\NiasAgeVerification\Enums\Scope;
+use LeonLav77\NiasAgeVerification\Exceptions\InvalidStateException;
 
 class AgeVerificationService
 {

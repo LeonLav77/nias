@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Vendor\NiasAgeVerification\Dtos;
+namespace LeonLav77\NiasAgeVerification\Dtos;
 
 final class VerificationResultDto
 {

@@ -20,7 +20,7 @@ The service provider is auto-discovered, so routes exist immediately at
 Implement the contract on your product model:
 
 ```php
-use Vendor\NiasAgeVerification\Contracts\IsAgeRestricted;
+use LeonLav77\NiasAgeVerification\Contracts\IsAgeRestricted;
 
 class Product extends Model implements IsAgeRestricted
 {

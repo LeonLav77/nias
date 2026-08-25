@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Vendor\NiasAgeVerification\Http\Resources;
+namespace LeonLav77\NiasAgeVerification\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;

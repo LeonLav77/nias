@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Vendor\NiasAgeVerification\Dtos;
+namespace LeonLav77\NiasAgeVerification\Dtos;
 
 use Carbon\CarbonImmutable;
-use Vendor\NiasAgeVerification\Exceptions\InvalidIdTokenException;
+use LeonLav77\NiasAgeVerification\Exceptions\InvalidIdTokenException;
 
 /**
  * The claims we act on, taken from a token that has already been verified.

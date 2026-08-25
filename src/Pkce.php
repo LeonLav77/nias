@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Vendor\NiasAgeVerification;
+namespace LeonLav77\NiasAgeVerification;
 
 class Pkce
 {

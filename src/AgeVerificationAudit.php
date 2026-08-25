@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Vendor\NiasAgeVerification;
+namespace LeonLav77\NiasAgeVerification;
 
-use Vendor\NiasAgeVerification\Dtos\VerificationResultDto;
-use Vendor\NiasAgeVerification\Exceptions\InvalidIdTokenException;
-use Vendor\NiasAgeVerification\Models\AgeVerification;
-use Vendor\NiasAgeVerification\Models\AgeVerificationOrder;
+use LeonLav77\NiasAgeVerification\Dtos\VerificationResultDto;
+use LeonLav77\NiasAgeVerification\Exceptions\InvalidIdTokenException;
+use LeonLav77\NiasAgeVerification\Models\AgeVerification;
+use LeonLav77\NiasAgeVerification\Models\AgeVerificationOrder;
 
 class AgeVerificationAudit
 {

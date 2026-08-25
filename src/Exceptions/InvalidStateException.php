@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Vendor\NiasAgeVerification\Exceptions;
+namespace LeonLav77\NiasAgeVerification\Exceptions;
 
 
 

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Vendor\NiasAgeVerification;
+namespace LeonLav77\NiasAgeVerification;
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
-use Vendor\NiasAgeVerification\Http\Middleware\RequireAgeVerification;
+use LeonLav77\NiasAgeVerification\Http\Middleware\RequireAgeVerification;
 
 class NiasAgeVerificationServiceProvider extends ServiceProvider
 {

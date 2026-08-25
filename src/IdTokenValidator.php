@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Vendor\NiasAgeVerification;
+namespace LeonLav77\NiasAgeVerification;
 
 use Firebase\JWT\JWK;
 use Firebase\JWT\JWT;
 use Throwable;
-use Vendor\NiasAgeVerification\Dtos\IdTokenClaimsDto;
-use Vendor\NiasAgeVerification\Exceptions\InvalidIdTokenException;
+use LeonLav77\NiasAgeVerification\Dtos\IdTokenClaimsDto;
+use LeonLav77\NiasAgeVerification\Exceptions\InvalidIdTokenException;
 
 class IdTokenValidator
 {

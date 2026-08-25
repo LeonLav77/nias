@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Vendor\NiasAgeVerification\Enums;
+namespace LeonLav77\NiasAgeVerification\Enums;
 
 enum GrantType: string
 {

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Vendor\NiasAgeVerification;
+namespace LeonLav77\NiasAgeVerification;
 
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
-use Vendor\NiasAgeVerification\Enums\GrantType;
-use Vendor\NiasAgeVerification\Exceptions\TokenExchangeException;
+use LeonLav77\NiasAgeVerification\Enums\GrantType;
+use LeonLav77\NiasAgeVerification\Exceptions\TokenExchangeException;
 
 class NiasApiHandler
 {

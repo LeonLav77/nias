@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Vendor\NiasAgeVerification\Http\Requests;
+namespace LeonLav77\NiasAgeVerification\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Vendor\NiasAgeVerification\Models;
+namespace LeonLav77\NiasAgeVerification\Models;
 
 use Illuminate\Database\Eloquent\Model;
 

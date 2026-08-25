@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Vendor\NiasAgeVerification\Models;
+namespace LeonLav77\NiasAgeVerification\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
-use Vendor\NiasAgeVerification\Dtos\VerificationResultDto;
+use LeonLav77\NiasAgeVerification\Dtos\VerificationResultDto;
 
 /**
  * @property string $id

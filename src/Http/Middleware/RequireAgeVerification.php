@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Vendor\NiasAgeVerification\Http\Middleware;
+namespace LeonLav77\NiasAgeVerification\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Vendor\NiasAgeVerification\AgeVerificationService;
-use Vendor\NiasAgeVerification\Contracts\IsAgeRestricted;
-use Vendor\NiasAgeVerification\Models\AgeVerification;
+use LeonLav77\NiasAgeVerification\AgeVerificationService;
+use LeonLav77\NiasAgeVerification\Contracts\IsAgeRestricted;
+use LeonLav77\NiasAgeVerification\Models\AgeVerification;
 
 class RequireAgeVerification
 {

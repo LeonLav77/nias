@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Vendor\NiasAgeVerification\Http\Controllers;
+namespace LeonLav77\NiasAgeVerification\Http\Controllers;
 
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Vendor\NiasAgeVerification\AgeVerificationService;
-use Vendor\NiasAgeVerification\Contracts\IsAgeRestricted;
-use Vendor\NiasAgeVerification\Exceptions\NiasException;
-use Vendor\NiasAgeVerification\Http\Requests\CallbackRequest;
-use Vendor\NiasAgeVerification\Http\Resources\StartVerificationResource;
+use LeonLav77\NiasAgeVerification\AgeVerificationService;
+use LeonLav77\NiasAgeVerification\Contracts\IsAgeRestricted;
+use LeonLav77\NiasAgeVerification\Exceptions\NiasException;
+use LeonLav77\NiasAgeVerification\Http\Requests\CallbackRequest;
+use LeonLav77\NiasAgeVerification\Http\Resources\StartVerificationResource;
 
 class AgeVerificationController
 {
