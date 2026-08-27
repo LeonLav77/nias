@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use LeonLav77\NiasAgeVerification\AgeVerificationService;
 use LeonLav77\NiasAgeVerification\Contracts\IsAgeRestricted;
+use LeonLav77\NiasAgeVerification\Dtos\VerificationEnvelopeDto;
 use LeonLav77\NiasAgeVerification\Models\AgeVerification;
 
 class RequireAgeVerification
@@ -24,30 +25,27 @@ class RequireAgeVerification
 			return $next($request);
 		}
 
+		$envelope = VerificationEnvelopeDto::fromRequest($request);
+
+		if ($envelope->isForeign()) {
+			return $next($request);
+		}
+
 		/** @var class-string<IsAgeRestricted> $model */
 		$model = config('nias-age-verification.product_model');
 
-		$items = $model::findMany($this->itemIds($request));
+		$items = $model::findMany($envelope->itemIds);
 
 		if (! $this->service->requiresVerification($items)) {
 			return $next($request);
 		}
 
-		$verification = AgeVerification::find($request->string('verification_id')->toString());
+		$verification = $envelope->id === null ? null : AgeVerification::find($envelope->id);
 
 		if ($verification === null || ! $verification->permitsPurchase()) {
 			abort(Response::HTTP_FORBIDDEN, __('Age verification is required for one or more items in this order.'));
 		}
 
 		return $next($request);
-	}
-
-	protected function itemIds(Request $request): array
-	{
-		return collect($request->input('items', []))
-			->pluck('id')
-			->filter()
-			->values()
-			->all();
 	}
 }

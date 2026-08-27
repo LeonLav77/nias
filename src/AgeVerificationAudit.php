@@ -17,9 +17,13 @@ class AgeVerificationAudit
 		return AgeVerification::record($result);
 	}
 
-	public function attachOrder(string $verificationId, AgeVerifiableOrder $order): ?AgeVerification
+	public function attachOrder(AgeVerifiableOrder $order, ?string $verificationId = null): ?AgeVerification
 	{
 		if (! config('nias-age-verification.enabled')) {
+			return null;
+		}
+
+		if ($verificationId === null || $verificationId === '') {
 			return null;
 		}
 

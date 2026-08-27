@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use LeonLav77\NiasAgeVerification\AgeVerificationService;
 use LeonLav77\NiasAgeVerification\Contracts\IsAgeRestricted;
+use LeonLav77\NiasAgeVerification\Dtos\VerificationEnvelopeDto;
 use LeonLav77\NiasAgeVerification\Exceptions\NiasException;
 use LeonLav77\NiasAgeVerification\Http\Requests\CallbackRequest;
 use LeonLav77\NiasAgeVerification\Http\Resources\StartVerificationResource;
@@ -25,7 +26,9 @@ class AgeVerificationController
 		/** @var class-string<IsAgeRestricted> $model */
 		$model = config('nias-age-verification.product_model');
 
-		$items = $model::findMany($request->input('product_ids', []));
+		$envelope = VerificationEnvelopeDto::fromRequest($request);
+
+		$items = $model::findMany($envelope->itemIds);
 
 		if (! $this->service->requiresVerification($items)) {
 			return new StartVerificationResource(required: false);
