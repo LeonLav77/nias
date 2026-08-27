@@ -2,12 +2,11 @@
 
 declare(strict_types=1);
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
 
-return new class extends Migration
-{
+return new class extends Migration {
 	public function up(): void
 	{
 		Schema::create('age_verifications', function (Blueprint $table): void {
@@ -16,7 +15,6 @@ return new class extends Migration
 			$table->char('token_hash', 64)->unique();
 			$table->boolean('is_adult');
 
-			// When Nias confirmed. The audit fact, never recomputed.
 			$table->timestamp('verified_at');
 			$table->timestamp('expires_at');
 
