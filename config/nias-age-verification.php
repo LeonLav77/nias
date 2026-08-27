@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 return [
-	'enabled' => env('NIAS_ENABLED', true),
+	'enabled' => env('NIAS_ENABLED', false),
 
 	// Model that implemetns the isAgeRestricted contract
 	'product_model' => null,
