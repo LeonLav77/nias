@@ -42,12 +42,12 @@ class AgeVerificationManager
 		string $verificationCountry
 	): void
 	{
-		if (strtoupper($requestCountry) !== strtoupper($verificationCountry)) {
-			throw new InvalidIdTokenException('Verification country does not match the request.');
-		}
-
 		if (! config('nias-age-verification.enabled')) {
 			return;
+		}
+
+		if (strtoupper($requestCountry) !== strtoupper($verificationCountry)) {
+			throw new InvalidIdTokenException('Verification country does not match the request.');
 		}
 
 		$request = array_unique(array_map('strval', $requestOrderIds));
