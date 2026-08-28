@@ -10,6 +10,7 @@ use LeonLav77\NiasAgeVerification\Enums\CodeChallengeMethod;
 use LeonLav77\NiasAgeVerification\Enums\ResponseType;
 use LeonLav77\NiasAgeVerification\Enums\Scope;
 use LeonLav77\NiasAgeVerification\Exceptions\InvalidStateException;
+use LeonLav77\NiasAgeVerification\Models\AgeVerification;
 
 class AgeVerificationService
 {
@@ -17,7 +18,7 @@ class AgeVerificationService
         protected StateStore $stateStore,
         protected NiasApiHandler $api,
         protected IdTokenValidator $validator,
-        protected AgeVerificationAudit $audit,
+        protected AgeVerificationManager $audit,
     ) {
     }
 
@@ -78,7 +79,7 @@ class AgeVerificationService
 
         $result = new VerificationResultDto($claims, $idToken);
 
-        $verification = $this->audit->record($result);
+        $verification = AgeVerification::record($result);
 
         return $result->withVerificationId($verification->getKey());
     }
