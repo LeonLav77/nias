@@ -31,16 +31,18 @@ class VerificationCallbackResponse implements Responsable
 		if ($this->error !== null) {
 			$url = config('nias-age-verification.callback_denied');
 
-			$query = [
-				'error' => $this->error->value,
-				'message' => $this->error->message(),
-			];
-		} else {
-			$url = config('nias-age-verification.callback_approved');
+			$redirect = new RedirectResponse($url . '?' . http_build_query(['error' => $this->error->value]));
 
-			$query = ['verification_id' => $this->verificationId];
+			return $redirect->withCookie(cookie(
+				name: 'nias_error_message',
+				value: $this->error->message(),
+				minutes: 5,
+				httpOnly: false,
+			));
 		}
 
-		return new RedirectResponse($url . '?' . http_build_query($query));
+		$url = config('nias-age-verification.callback_approved');
+
+		return new RedirectResponse($url . '?' . http_build_query(['verification_id' => $this->verificationId]));
 	}
 }
