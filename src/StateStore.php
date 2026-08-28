@@ -15,7 +15,7 @@ class StateStore
 			'code_verifier' => $codeVerifier,
 			'nonce' => $nonce,
 		];
-		$ttl = config('nias-age-verification.state_ttl');
+		$ttl = (int) config('nias-age-verification.state_ttl');
 
 		cache()->put($name, $data, $ttl);
 	}

@@ -16,7 +16,7 @@ class NiasApiHandler
 	public function __construct()
 	{
 		$baseUrl = config('nias-age-verification.base_url');
-		$timeout = config('nias-age-verification.http_timeout');
+		$timeout = (int) config('nias-age-verification.http_timeout');
 
 		$this->client = Http::baseUrl($baseUrl)
 			->timeout($timeout)

@@ -19,7 +19,7 @@ class SigningKeyStore
 	{
 		return Cache::remember(
 			self::CACHE_KEY,
-			config('nias-age-verification.signing_keys_ttl'),
+			(int) config('nias-age-verification.signing_keys_ttl'),
 			fn (): array => $this->api->fetchSigningKeys(),
 		);
 	}
