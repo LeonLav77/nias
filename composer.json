@@ -15,8 +15,7 @@
     ],
     "require": {
         "php": "^8.1",
-        "illuminate/support": "*",
-        "illuminate/http": "*",
+        "laravel/framework": "*",
         "firebase/php-jwt": "*"
     },
     "extra": {

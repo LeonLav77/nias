@@ -21,9 +21,13 @@ class IdTokenValidator
 	) {
 	}
 
-	public function validate(string $idToken, ?string $expectedNonce = null): IdTokenClaimsDto
+	public function validate(string $idToken, string $expectedNonce): IdTokenClaimsDto
 	{
 		$keys = JWK::parseKeySet($this->keyStore->get(), self::ALGORITHM);
+
+		// $leeway is static and shared with every other user of the library in
+		// this process, so it is restored before we hand control back.
+		$previousLeeway = JWT::$leeway;
 		JWT::$leeway = self::LEEWAY;
 
 		try {
@@ -31,14 +35,14 @@ class IdTokenValidator
 			$claims = (array) JWT::decode($idToken, $keys);
 		} catch (Throwable $e) {
 			throw new InvalidIdTokenException('ID token failed verification: ' . $e->getMessage());
+		} finally {
+			JWT::$leeway = $previousLeeway;
 		}
 
 		$this->assertClaim($claims, 'iss', config('nias-age-verification.base_url'));
 		$this->assertClaim($claims, 'aud', config('nias-age-verification.client_id'));
 
-		if ($expectedNonce !== null) {
-			$this->assertClaim($claims, 'nonce', $expectedNonce);
-		}
+		$this->assertClaim($claims, 'nonce', $expectedNonce);
 
 		return IdTokenClaimsDto::fromClaims($claims);
 	}

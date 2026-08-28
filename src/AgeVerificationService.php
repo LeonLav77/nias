@@ -63,10 +63,8 @@ class AgeVerificationService
 
         $claims = $this->validator->validate($idToken, $stored['nonce']);
 
-        $result = new VerificationResultDto($claims, $idToken);
+        $verification = AgeVerification::record($claims, $idToken);
 
-        $verification = AgeVerification::record($result);
-
-        return $result->withVerificationId($verification->getKey());
+        return new VerificationResultDto($claims, $idToken, (string) $verification->getKey());
     }
 }

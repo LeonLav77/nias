@@ -7,9 +7,6 @@ namespace LeonLav77\NiasAgeVerification\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-/**
- * @property-read string $redirectUrl
- */
 class StartVerificationResource extends JsonResource
 {
 	public function __construct(

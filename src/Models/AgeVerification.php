@@ -7,7 +7,7 @@ namespace LeonLav77\NiasAgeVerification\Models;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
-use LeonLav77\NiasAgeVerification\Dtos\VerificationResultDto;
+use LeonLav77\NiasAgeVerification\Dtos\IdTokenClaimsDto;
 
 class AgeVerification extends Model
 {
@@ -27,22 +27,17 @@ class AgeVerification extends Model
 		'expires_at' => 'immutable_datetime',
 	];
 
-	public static function record(VerificationResultDto $result): self
+	public static function record(IdTokenClaimsDto $claims, string $idToken): self
 	{
 		$verifiedAt = CarbonImmutable::now();
 
 		return static::create([
-			'id_token' => $result->idToken,
-			'token_hash' => static::hashToken($result->idToken),
-			'is_adult' => $result->isAdult(),
+			'id_token' => $idToken,
+			'token_hash' => static::hashToken($idToken),
+			'is_adult' => $claims->isAdult,
 			'verified_at' => $verifiedAt,
 			'expires_at' => $verifiedAt->addSeconds(static::ttl()),
 		]);
-	}
-
-	public static function findByToken(string $idToken): ?self
-	{
-		return static::where('token_hash', static::hashToken($idToken))->first();
 	}
 
 	public static function hashToken(string $idToken): string

@@ -7,9 +7,4 @@ namespace LeonLav77\NiasAgeVerification\Enums;
 enum GrantType: string
 {
 	case AUTHORIZATION_CODE = 'authorization_code';
-
-	public static function getDefault(): self
-	{
-		return self::AUTHORIZATION_CODE;
-	}
 }
