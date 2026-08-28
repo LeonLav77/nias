@@ -7,7 +7,9 @@ namespace LeonLav77\NiasAgeVerification\Models;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\UniqueConstraintViolationException;
 use LeonLav77\NiasAgeVerification\Dtos\IdTokenClaimsDto;
+use LeonLav77\NiasAgeVerification\Exceptions\TokenReplayedException;
 
 class AgeVerification extends Model
 {
@@ -29,15 +31,25 @@ class AgeVerification extends Model
 
 	public static function record(IdTokenClaimsDto $claims, string $idToken): self
 	{
+		$tokenHash = static::hashToken($idToken);
+
+		if (static::where('token_hash', $tokenHash)->exists()) {
+			throw new TokenReplayedException('This ID token has already been recorded.');
+		}
+
 		$verifiedAt = CarbonImmutable::now();
 
-		return static::create([
-			'id_token' => $idToken,
-			'token_hash' => static::hashToken($idToken),
-			'is_adult' => $claims->isAdult,
-			'verified_at' => $verifiedAt,
-			'expires_at' => $verifiedAt->addSeconds(static::ttl()),
-		]);
+		try {
+			return static::create([
+				'id_token' => $idToken,
+				'token_hash' => $tokenHash,
+				'is_adult' => $claims->isAdult,
+				'verified_at' => $verifiedAt,
+				'expires_at' => $verifiedAt->addSeconds(static::ttl()),
+			]);
+		} catch (UniqueConstraintViolationException) {
+			throw new TokenReplayedException('This ID token has already been recorded.');
+		}
 	}
 
 	public static function hashToken(string $idToken): string

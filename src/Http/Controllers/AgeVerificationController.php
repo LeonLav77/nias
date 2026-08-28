@@ -9,6 +9,7 @@ use LeonLav77\NiasAgeVerification\Enums\VerificationError;
 use LeonLav77\NiasAgeVerification\Exceptions\InvalidIdTokenException;
 use LeonLav77\NiasAgeVerification\Exceptions\InvalidStateException;
 use LeonLav77\NiasAgeVerification\Exceptions\TokenExchangeException;
+use LeonLav77\NiasAgeVerification\Exceptions\TokenReplayedException;
 use LeonLav77\NiasAgeVerification\Http\Requests\CallbackRequest;
 use LeonLav77\NiasAgeVerification\Http\Resources\StartVerificationResource;
 use LeonLav77\NiasAgeVerification\Http\Responses\VerificationCallbackResponse;
@@ -49,6 +50,8 @@ class AgeVerificationController
 			return VerificationCallbackResponse::denied(VerificationError::EXCHANGE_FAILED);
 		} catch (InvalidIdTokenException) {
 			return VerificationCallbackResponse::denied(VerificationError::INVALID_TOKEN);
+		} catch (TokenReplayedException) {
+			return VerificationCallbackResponse::denied(VerificationError::TOKEN_REPLAYED);
 		}
 
 		if (! $result->isAdult()) {

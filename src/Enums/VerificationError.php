@@ -21,6 +21,9 @@ enum VerificationError: string
 	/** Nias verified the buyer and said they are not old enough. */
 	case NOT_ADULT = 'not_adult';
 
+	/** The same ID token came back a second time. */
+	case TOKEN_REPLAYED = 'token_replayed';
+
 	/** No usable verification for a cart that needs one. */
 	case REQUIRED = 'required';
 
