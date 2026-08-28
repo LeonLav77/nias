@@ -10,7 +10,6 @@ use Symfony\Component\HttpFoundation\Response;
 use LeonLav77\NiasAgeVerification\AgeVerificationService;
 use LeonLav77\NiasAgeVerification\Contracts\IsAgeRestricted;
 use LeonLav77\NiasAgeVerification\Dtos\VerificationEnvelopeDto;
-use LeonLav77\NiasAgeVerification\Models\AgeVerification;
 
 class RequireAgeVerification
 {
@@ -40,10 +39,10 @@ class RequireAgeVerification
 			return $next($request);
 		}
 
-		$verification = $envelope->id === null ? null : AgeVerification::find($envelope->id);
+		$reason = $envelope->denialReason();
 
-		if ($verification === null || ! $verification->permitsPurchase()) {
-			abort(Response::HTTP_FORBIDDEN, __('Age verification is required for one or more items in this order.'));
+		if ($reason !== null) {
+			abort(Response::HTTP_FORBIDDEN, $reason->message());
 		}
 
 		return $next($request);

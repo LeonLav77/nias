@@ -9,14 +9,6 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use LeonLav77\NiasAgeVerification\Dtos\VerificationResultDto;
 
-/**
- * @property string $id
- * @property string $id_token
- * @property string $token_hash
- * @property bool $is_adult
- * @property \Carbon\CarbonImmutable $verified_at
- * @property \Carbon\CarbonImmutable $expires_at
- */
 class AgeVerification extends Model
 {
 	use HasUuids;
@@ -44,9 +36,6 @@ class AgeVerification extends Model
 			'token_hash' => static::hashToken($result->idToken),
 			'is_adult' => $result->isAdult(),
 			'verified_at' => $verifiedAt,
-
-			// Our own window, not the token's. The token's `exp` has already done
-			// its job in IdTokenValidator and is of no further use here.
 			'expires_at' => $verifiedAt->addSeconds(static::ttl()),
 		]);
 	}
@@ -64,11 +53,5 @@ class AgeVerification extends Model
 	protected static function ttl(): int
 	{
 		return (int) config('nias-age-verification.verification_ttl');
-	}
-
-	/** An adult verdict that has not lapsed. Anything else denies the sale. */
-	public function permitsPurchase(): bool
-	{
-		return $this->is_adult && $this->expires_at->isFuture();
 	}
 }

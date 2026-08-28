@@ -4,14 +4,17 @@ declare(strict_types=1);
 
 namespace LeonLav77\NiasAgeVerification\Http\Controllers;
 
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use LeonLav77\NiasAgeVerification\AgeVerificationService;
 use LeonLav77\NiasAgeVerification\Contracts\IsAgeRestricted;
 use LeonLav77\NiasAgeVerification\Dtos\VerificationEnvelopeDto;
-use LeonLav77\NiasAgeVerification\Exceptions\NiasException;
+use LeonLav77\NiasAgeVerification\Enums\VerificationError;
+use LeonLav77\NiasAgeVerification\Exceptions\InvalidIdTokenException;
+use LeonLav77\NiasAgeVerification\Exceptions\InvalidStateException;
+use LeonLav77\NiasAgeVerification\Exceptions\TokenExchangeException;
 use LeonLav77\NiasAgeVerification\Http\Requests\CallbackRequest;
 use LeonLav77\NiasAgeVerification\Http\Resources\StartVerificationResource;
+use LeonLav77\NiasAgeVerification\Http\Responses\VerificationCallbackResponse;
 
 class AgeVerificationController
 {
@@ -40,28 +43,28 @@ class AgeVerificationController
 		);
 	}
 
-	public function callback(CallbackRequest $request): RedirectResponse
+	public function callback(CallbackRequest $request): VerificationCallbackResponse
 	{
 		$code = $request->string('code')->toString();
-		$deniedUrl = config('nias-age-verification.callback_denied');
-		$acceptedUrl = config('nias-age-verification.callback_approved');
 
 		if ($code === '') {
-			return new RedirectResponse($deniedUrl);
+			return VerificationCallbackResponse::denied(VerificationError::CANCELLED);
 		}
 
 		try {
 			$result = $this->service->complete($code, $request->string('state')->toString());
-		} catch (NiasException) {
-			return new RedirectResponse($deniedUrl);
-		}
-		
-		if (! $result->isAdult()) {
-			return new RedirectResponse($deniedUrl);
+		} catch (InvalidStateException) {
+			return VerificationCallbackResponse::denied(VerificationError::STATE_EXPIRED);
+		} catch (TokenExchangeException) {
+			return VerificationCallbackResponse::denied(VerificationError::EXCHANGE_FAILED);
+		} catch (InvalidIdTokenException) {
+			return VerificationCallbackResponse::denied(VerificationError::INVALID_TOKEN);
 		}
 
-		return new RedirectResponse(
-			$acceptedUrl . '?' . http_build_query(['verification_id' => $result->verificationId]),
-		);
+		if (! $result->isAdult()) {
+			return VerificationCallbackResponse::denied(VerificationError::NOT_ADULT);
+		}
+
+		return VerificationCallbackResponse::approved($result->verificationId);
 	}
 }

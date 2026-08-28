@@ -25,6 +25,12 @@ class NiasAgeVerificationServiceProvider extends ServiceProvider
 			__DIR__ . '/../database/migrations' => database_path('migrations'),
 		], 'nias-age-verification-migrations');
 
+		$this->loadTranslationsFrom(__DIR__ . '/../lang', 'nias-age-verification');
+
+		$this->publishes([
+			__DIR__ . '/../lang' => $this->app->langPath('vendor/nias-age-verification'),
+		], 'nias-age-verification-translations');
+
 		Route::aliasMiddleware('nias.age-verification', RequireAgeVerification::class);
 
 		Route::prefix('api/age-verification')
