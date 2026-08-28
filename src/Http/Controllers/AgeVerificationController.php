@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace LeonLav77\NiasAgeVerification\Http\Controllers;
 
-use Illuminate\Http\Request;
 use LeonLav77\NiasAgeVerification\AgeVerificationService;
 use LeonLav77\NiasAgeVerification\Contracts\IsAgeRestricted;
 use LeonLav77\NiasAgeVerification\Dtos\VerificationEnvelopeDto;
@@ -13,6 +12,7 @@ use LeonLav77\NiasAgeVerification\Exceptions\InvalidIdTokenException;
 use LeonLav77\NiasAgeVerification\Exceptions\InvalidStateException;
 use LeonLav77\NiasAgeVerification\Exceptions\TokenExchangeException;
 use LeonLav77\NiasAgeVerification\Http\Requests\CallbackRequest;
+use LeonLav77\NiasAgeVerification\Http\Requests\InitializeVerificationRequest;
 use LeonLav77\NiasAgeVerification\Http\Resources\StartVerificationResource;
 use LeonLav77\NiasAgeVerification\Http\Responses\VerificationCallbackResponse;
 
@@ -23,8 +23,7 @@ class AgeVerificationController
 	) {
 	}
 
-	// TODO: ADD VALIDATION
-	public function start(Request $request): StartVerificationResource
+	public function initialize(InitializeVerificationRequest $request): StartVerificationResource
 	{
 		/** @var class-string<IsAgeRestricted> $model */
 		$model = config('nias-age-verification.product_model');
