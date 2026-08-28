@@ -10,4 +10,6 @@ return [
 	'not_adult' => 'You do not meet the minimum age required for one or more items in this order.',
 	'required' => 'Age verification is required for one or more items in this order.',
 	'expired' => 'Your age verification has expired. Please verify again.',
+	'country_mismatch' => 'Your age verification is not valid for this country.',
+	'product_mismatch' => 'Your age verification does not cover the items in this order.',
 ];

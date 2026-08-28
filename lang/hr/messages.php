@@ -10,4 +10,6 @@ return [
 	'not_adult' => 'Ne zadovoljavate najnižu dob potrebnu za jedan ili više artikala u ovoj narudžbi.',
 	'required' => 'Za jedan ili više artikala u ovoj narudžbi potrebna je provjera dobi.',
 	'expired' => 'Vaša provjera dobi je istekla. Molimo provjerite ponovno.',
+	'country_mismatch' => 'Vaša provjera dobi ne vrijedi za ovu državu.',
+	'product_mismatch' => 'Vaša provjera dobi ne pokriva artikle u ovoj narudžbi.',
 ];

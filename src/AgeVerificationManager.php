@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace LeonLav77\NiasAgeVerification;
 
 use LeonLav77\NiasAgeVerification\Contracts\AgeVerifiableOrder;
+use LeonLav77\NiasAgeVerification\Exceptions\CountryMismatchException;
 use LeonLav77\NiasAgeVerification\Exceptions\InvalidIdTokenException;
+use LeonLav77\NiasAgeVerification\Exceptions\ProductMismatchException;
 use LeonLav77\NiasAgeVerification\Models\AgeVerification;
 use LeonLav77\NiasAgeVerification\Models\AgeVerificationOrder;
 
@@ -47,7 +49,7 @@ class AgeVerificationManager
 		}
 
 		if (strtoupper($requestCountry) !== strtoupper($verificationCountry)) {
-			throw new InvalidIdTokenException('Verification country does not match the request.');
+			throw new CountryMismatchException('Verification country does not match the request.');
 		}
 
 		$request = array_unique(array_map('strval', $requestOrderIds));
@@ -57,7 +59,7 @@ class AgeVerificationManager
 		sort($verified);
 
 		if ($request !== $verified) {
-			throw new InvalidIdTokenException('Verification was not issued for these products.');
+			throw new ProductMismatchException('Verification was not issued for these products.');
 		}
 	}
 }
