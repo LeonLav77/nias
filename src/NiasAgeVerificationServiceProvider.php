@@ -6,7 +6,6 @@ namespace LeonLav77\NiasAgeVerification;
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
-use LeonLav77\NiasAgeVerification\Http\Middleware\RequireAgeVerification;
 
 class NiasAgeVerificationServiceProvider extends ServiceProvider
 {
@@ -30,8 +29,6 @@ class NiasAgeVerificationServiceProvider extends ServiceProvider
 		$this->publishes([
 			__DIR__ . '/../lang' => $this->app->langPath('vendor/nias-age-verification'),
 		], 'nias-age-verification-translations');
-
-		Route::aliasMiddleware('nias.age-verification', RequireAgeVerification::class);
 
 		Route::prefix('api/age-verification')
 			->name('nias-age-verification.')

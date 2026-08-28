@@ -8,14 +8,12 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * @property-read bool $required
- * @property-read string|null $redirectUrl
+ * @property-read string $redirectUrl
  */
 class StartVerificationResource extends JsonResource
 {
 	public function __construct(
-		public bool $required,
-		public ?string $redirectUrl = null,
+		public string $redirectUrl,
 	) {
 		parent::__construct(null);
 	}
@@ -24,7 +22,6 @@ class StartVerificationResource extends JsonResource
 	public function toArray(Request $request): array
 	{
 		return [
-			'required' => $this->required,
 			'redirect_url' => $this->redirectUrl,
 		];
 	}

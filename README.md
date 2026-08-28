@@ -31,11 +31,7 @@ class Product extends Model implements IsAgeRestricted
 }
 ```
 
-Then point the config at it and fill in `.env`:
-
-```php
-'product_model' => App\Models\Product::class,
-```
+Then fill in `.env`:
 
 ```
 NIAS_CLIENT_ID=...
@@ -50,20 +46,63 @@ rejects the authorization request.
 The buyer is never trusted to report their own age, and the frontend is never
 trusted to report what is in the cart.
 
-1. **Before checkout** the frontend posts the cart's product ids to
-   `/start`. The package loads those products and scans them.
-2. Nothing age-restricted → `{"required": false}`, checkout proceeds untouched.
-3. Something age-restricted → the package generates PKCE, `state` and `nonce`,
-   and returns a Nias authorize URL for the frontend to redirect to.
-4. The buyer confirms in the m-Građani app.
-5. Nias redirects to `/callback`, which exchanges the code for an ID token,
+1. **Before checkout** the frontend decides its cart needs a verification and
+   posts to `/api/age-verification`, which returns a Nias authorize URL to
+   redirect to.
+2. The buyer confirms in the m-Građani app.
+3. Nias redirects to `/callback`, which exchanges the code for an ID token,
    validates it, and records the outcome.
-6. **At checkout** middleware repeats the same scan against the order's own
-   items and requires a valid verification. This is the security boundary —
-   step 1 is only a UX affordance so the buyer is not surprised at the end.
+4. **At checkout** your controller calls `assertVerified()` with the order's own
+   resolved items and requires a valid verification.
 
-Because the scan runs twice, a buyer who verifies with a clean cart and then
-adds alcohol is still caught.
+Step 4 is the security boundary. Step 1 is a UX affordance, and the frontend
+decides when to run it — nothing there is trusted, so a buyer who skips it, or
+who verifies with a clean cart and then adds alcohol, is still caught at
+checkout.
+
+## At checkout
+
+There is no middleware. The check is one call, and the application passes in
+everything the decision needs:
+
+```php
+use LeonLav77\NiasAgeVerification\AgeVerificationManager;
+
+public function store(Request $request, AgeVerificationManager $nias)
+{
+	$items = collect($request->items)->map(fn ($item) => OrderItem::getItemModel($item));
+
+	$nias->assertVerified($items, $request->input('verification.id'), $request->input('country'));
+}
+```
+
+Passing resolved models rather than ids is what lets a cart hold a mix of types
+— `Product`, `Subscription`, anything implementing `IsAgeRestricted`. The
+package never resolves a model or compares an id, so two different classes
+sharing an id cannot be confused for each other.
+
+It throws `VerificationRequiredException` when the cart needs a verification and
+does not have a usable one, which renders as a 403 for JSON requests. Catch it
+if you would rather send the buyer into the flow than refuse:
+
+```php
+try {
+	$nias->assertVerified($items, $verificationId, $country);
+} catch (VerificationRequiredException $e) {
+	return redirect()->to($service->getRedirectUrl());
+}
+```
+
+The check returns early, allowing the order through, when the package is
+disabled, when the country is not the configured domestic one (Nias can only
+verify Croatian buyers, so a foreign order cannot be held to a check it has no
+way of passing), or when nothing in the cart is age-restricted.
+
+Once the order exists, record the proof:
+
+```php
+$nias->attachOrder($order, $verificationId);
+```
 
 ## Files
 
@@ -73,14 +112,19 @@ Deliberately tiny and Eloquent-free. `isAgeRestricted()` describes the
 *product*, never the buyer — it means "this item requires an adult", not "this
 buyer has been verified".
 
-### `src/AgeVerificationService.php`
-The orchestrator, and the only class the application talks to.
+### `src/AgeVerificationManager.php`
+The application-facing entry point, injected where it is needed.
 
-- `requiresVerification()` — scans items for anything age-restricted. Called by
-  both the start endpoint and the checkout middleware, so the two cannot drift.
+- `assertVerified()` — the whole checkout check in one call: country, then
+  eligibility, then the verification's existence, adulthood and expiry.
+- `attachOrder()` — links a verification to an order once the order exists.
+
+### `src/AgeVerificationService.php`
+The Nias protocol flow.
+
 - `getRedirectUrl()` — generates PKCE, `state` and `nonce`, and builds the
   authorize URL.
-- `complete()` — exchanges the code and validates the ID token. *Not yet built.*
+- `complete()` — exchanges the code and validates the ID token.
 
 ### `src/Pkce.php`
 Random value generation for the OAuth flow. Separate from the service because it
@@ -109,11 +153,12 @@ each.
 ### `src/Http/Controllers/AgeVerificationController.php`
 Both HTTP endpoints.
 
-- `start()` — loads products by the posted ids, scans them, and either reports
-  that nothing is required or returns the authorize URL. Loading from the
-  database rather than trusting a posted flag is what stops a caller claiming
-  their cart is alcohol-free.
-- `callback()` — where Nias sends the buyer back. *Not yet built.*
+- `initialize()` — returns an authorize URL. Takes no cart: the frontend decides
+  when a verification is worth starting, and starting a needless one costs
+  nothing since checkout re-decides against the order's own items.
+- `callback()` — where Nias sends the buyer back. Exchanges the code, validates
+  the ID token, records the outcome, and redirects to the configured frontend
+  target.
 
 ### `src/NiasAgeVerificationServiceProvider.php`
 Merges config, registers the publish tag, and loads the routes under a fixed
@@ -121,11 +166,13 @@ Merges config, registers the publish tag, and loads the routes under a fixed
 `extra.laravel`, so installing the package is the whole setup.
 
 ### `routes/api.php`
-`POST /start` and `GET /callback`. The callback is a `GET` because it receives
+`POST /` and `GET /callback`, both under the `api/age-verification` prefix. The
+callback is a `GET` because it receives
 a browser redirect from Nias, not a request from your frontend.
 
 ### `config/nias-age-verification.php`
-- `product_model` — the class implementing `IsAgeRestricted`.
+- `country` — the domestic country code (`HR`). Orders from anywhere else skip
+  the check.
 - `base_url` — the Nias environment, defaulting to test. All endpoints hang off
   it (`/authorize`, `/token`, `/jwks`) and it doubles as the expected `iss`.
 - `client_id` — issued by MPUDT after registering with MINGO.

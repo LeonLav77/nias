@@ -5,14 +5,62 @@ declare(strict_types=1);
 namespace LeonLav77\NiasAgeVerification;
 
 use LeonLav77\NiasAgeVerification\Contracts\AgeVerifiableOrder;
-use LeonLav77\NiasAgeVerification\Exceptions\CountryMismatchException;
+use LeonLav77\NiasAgeVerification\Contracts\IsAgeRestricted;
+use LeonLav77\NiasAgeVerification\Enums\VerificationError;
 use LeonLav77\NiasAgeVerification\Exceptions\InvalidIdTokenException;
-use LeonLav77\NiasAgeVerification\Exceptions\ProductMismatchException;
+use LeonLav77\NiasAgeVerification\Exceptions\VerificationRequiredException;
 use LeonLav77\NiasAgeVerification\Models\AgeVerification;
 use LeonLav77\NiasAgeVerification\Models\AgeVerificationOrder;
 
 class AgeVerificationManager
 {
+	public function assertVerified(iterable $items, ?string $verificationId, ?string $country = null): ?AgeVerification
+	{
+		if (! config('nias-age-verification.enabled')) {
+			return null;
+		}
+
+		if ($this->isForeign($country)) {
+			return null;
+		}
+
+		if (! $this->requiresVerification($items)) {
+			return null;
+		}
+
+		if ($verificationId === null || $verificationId === '') {
+			throw new VerificationRequiredException(VerificationError::REQUIRED);
+		}
+
+		$verification = AgeVerification::find($verificationId);
+
+		if ($verification === null) {
+			throw new VerificationRequiredException(VerificationError::REQUIRED);
+		}
+
+		if (! $verification->is_adult) {
+			throw new VerificationRequiredException(VerificationError::NOT_ADULT);
+		}
+
+		if (! $verification->expires_at->isFuture()) {
+			throw new VerificationRequiredException(VerificationError::EXPIRED);
+		}
+
+		return $verification;
+	}
+
+	/** @param iterable<IsAgeRestricted> $items */
+	protected function requiresVerification(iterable $items): bool
+	{
+		foreach ($items as $item) {
+			if ($item->isAgeRestricted()) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	public function attachOrder(AgeVerifiableOrder $order, ?string $verificationId = null): ?AgeVerification
 	{
 		if (! config('nias-age-verification.enabled')) {
@@ -37,29 +85,14 @@ class AgeVerificationManager
 		return $verification;
 	}
 
-	public function securityCheck(
-		array $requestOrderIds,
-		array $verificationOrderIds,
-		string $requestCountry,
-		string $verificationCountry
-	): void
+	protected function isForeign(?string $country): bool
 	{
-		if (! config('nias-age-verification.enabled')) {
-			return;
+		if ($country === null || $country === '') {
+			return false;
 		}
 
-		if (strtoupper($requestCountry) !== strtoupper($verificationCountry)) {
-			throw new CountryMismatchException('Verification country does not match the request.');
-		}
+		$domestic = strtoupper(trim((string) config('nias-age-verification.country')));
 
-		$request = array_unique(array_map('strval', $requestOrderIds));
-		$verified = array_unique(array_map('strval', $verificationOrderIds));
-
-		sort($request);
-		sort($verified);
-
-		if ($request !== $verified) {
-			throw new ProductMismatchException('Verification was not issued for these products.');
-		}
+		return strtoupper(trim($country)) !== $domestic;
 	}
 }

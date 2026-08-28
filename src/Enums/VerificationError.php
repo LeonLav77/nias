@@ -27,12 +27,6 @@ enum VerificationError: string
 	/** The verification is real but older than `verification_ttl`. */
 	case EXPIRED = 'expired';
 
-	/** The verification was issued for a different country than the request. */
-	case COUNTRY_MISMATCH = 'country_mismatch';
-
-	/** The verification was issued for a different set of products. */
-	case PRODUCT_MISMATCH = 'product_mismatch';
-
 	public function message(): string
 	{
 		return (string) __('nias-age-verification::messages.' . $this->value);

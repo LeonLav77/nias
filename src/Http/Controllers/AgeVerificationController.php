@@ -5,14 +5,11 @@ declare(strict_types=1);
 namespace LeonLav77\NiasAgeVerification\Http\Controllers;
 
 use LeonLav77\NiasAgeVerification\AgeVerificationService;
-use LeonLav77\NiasAgeVerification\Contracts\IsAgeRestricted;
-use LeonLav77\NiasAgeVerification\Dtos\VerificationEnvelopeDto;
 use LeonLav77\NiasAgeVerification\Enums\VerificationError;
 use LeonLav77\NiasAgeVerification\Exceptions\InvalidIdTokenException;
 use LeonLav77\NiasAgeVerification\Exceptions\InvalidStateException;
 use LeonLav77\NiasAgeVerification\Exceptions\TokenExchangeException;
 use LeonLav77\NiasAgeVerification\Http\Requests\CallbackRequest;
-use LeonLav77\NiasAgeVerification\Http\Requests\InitializeVerificationRequest;
 use LeonLav77\NiasAgeVerification\Http\Resources\StartVerificationResource;
 use LeonLav77\NiasAgeVerification\Http\Responses\VerificationCallbackResponse;
 
@@ -23,21 +20,15 @@ class AgeVerificationController
 	) {
 	}
 
-	public function initialize(InitializeVerificationRequest $request): StartVerificationResource
+	/**
+	 * Start a verification.
+	 *
+	 * Whether the cart needs one is the frontend's call; the binding decision is
+	 * made again at checkout against the order's own items.
+	 */
+	public function initialize(): StartVerificationResource
 	{
-		/** @var class-string<IsAgeRestricted> $model */
-		$model = config('nias-age-verification.product_model');
-
-		$envelope = VerificationEnvelopeDto::fromRequest($request);
-
-		$items = $model::findMany($envelope->itemIds);
-
-		if (! $this->service->requiresVerification($items)) {
-			return new StartVerificationResource(required: false);
-		}
-
 		return new StartVerificationResource(
-			required: true,
 			redirectUrl: $this->service->getRedirectUrl(),
 		);
 	}

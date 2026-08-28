@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace LeonLav77\NiasAgeVerification;
 
-use LeonLav77\NiasAgeVerification\Contracts\IsAgeRestricted;
 use LeonLav77\NiasAgeVerification\Dtos\VerificationResultDto;
 use LeonLav77\NiasAgeVerification\Enums\CodeChallengeMethod;
 use LeonLav77\NiasAgeVerification\Enums\ResponseType;
@@ -18,20 +17,7 @@ class AgeVerificationService
         protected StateStore $stateStore,
         protected NiasApiHandler $api,
         protected IdTokenValidator $validator,
-        protected AgeVerificationManager $audit,
     ) {
-    }
-
-    /** @param iterable<IsAgeRestricted> $items */
-    public function requiresVerification(iterable $items): bool
-    {
-        foreach ($items as $item) {
-            if ($item->isAgeRestricted()) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     public function getRedirectUrl(): string
