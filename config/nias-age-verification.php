@@ -5,7 +5,7 @@ declare(strict_types=1);
 return [
 	'enabled' => env('NIAS_ENABLED', false),
 
-	'product_model' => env('NIAS_PRODUCT_MODEL', 'App\\Models\\Product'),
+	'product_model' => env('NIAS_PRODUCT_MODEL', App\Models\Product::class),
 	'country' => env('NIAS_COUNTRY', 'HR'),
 	
 	'base_url' => env('NIAS_BASE_URL', 'https://mgradjani-test.gov.hr/idp'),
