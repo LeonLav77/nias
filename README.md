@@ -10,8 +10,10 @@ is ever received or stored.
 ## Install
 
 ```bash
-composer require vendor/nias-age-verification
+composer require leonlav77/nias-age-verification
 php artisan vendor:publish --tag=nias-age-verification-config
+php artisan vendor:publish --tag=nias-age-verification-migrations
+php artisan migrate
 ```
 
 The service provider is auto-discovered, so routes exist immediately at
@@ -31,15 +33,31 @@ class Product extends Model implements IsAgeRestricted
 }
 ```
 
+And on your order model:
+
+```php
+use LeonLav77\NiasAgeVerification\Concerns\HasAgeVerifications;
+use LeonLav77\NiasAgeVerification\Contracts\AgeVerifiableOrder;
+
+class Order extends Model implements AgeVerifiableOrder
+{
+	use HasAgeVerifications;
+}
+```
+
 Then fill in `.env`:
 
-```
+```dotenv
+NIAS_ENABLED=true
 NIAS_CLIENT_ID=...
 NIAS_REDIRECT_URI=https://yourapp.hr/api/age-verification/callback
+NIAS_CALLBACK_APPROVED_URL=https://yourapp.hr/checkout
+NIAS_CALLBACK_DENIED_URL=https://yourapp.hr/checkout
 ```
 
-`NIAS_REDIRECT_URI` must byte-match a URI registered with MINGO, or Nias
-rejects the authorization request.
+`NIAS_ENABLED` defaults to `false` — nothing is checked until you set it.
+`NIAS_REDIRECT_URI` must byte-match a URI registered with MINGO, or Nias rejects
+the authorization request.
 
 ## Flow
 
@@ -67,14 +85,40 @@ everything the decision needs:
 
 ```php
 use LeonLav77\NiasAgeVerification\AgeVerificationManager;
+use LeonLav77\NiasAgeVerification\Jobs\AttachOrderToVerification;
 
 public function store(Request $request, AgeVerificationManager $nias)
 {
 	$items = collect($request->items)->map(fn ($item) => OrderItem::getItemModel($item));
 
-	$nias->assertVerified($items, $request->input('verification.id'), $request->input('country'));
+	$verification = $nias->assertVerified($items, $request->input('verification.id'), $request->input('country'));
+
+	$order = Order::create([...]);
+
+	AttachOrderToVerification::dispatch($order, $verification)
+		->afterCommit();
 }
 ```
+
+`AttachOrderToVerification` records which verification authorised the order. You
+dispatch it yourself, which keeps the queue, connection and delay under your
+control — pick a queue for it, or dispatch it synchronously with
+`dispatchSync()`. Dispatch it `afterCommit()` as above so the worker cannot run
+ahead of the order's own transaction.
+
+Hand it the verification `assertVerified()` returned rather than an id — you
+already hold it, and the job then has nothing to look up. It is an Eloquent
+model, so only its key rides on the queue and the worker refetches it. The
+order, by contrast, is reduced to its identifier at construction, so it need not
+be a model itself.
+
+A null verification is fine: `assertVerified()` returns null whenever the order
+needed no check at all, and the job returns without doing anything, so you can
+dispatch it unconditionally on every order.
+
+The link is eventually consistent: an order can exist for a short window with no
+verification attached to it, and permanently if the job exhausts its retries, so
+monitor `failed_jobs` if you rely on this link as an audit record.
 
 Passing resolved models rather than ids is what lets a cart hold a mix of types
 — `Product`, `Subscription`, anything implementing `IsAgeRestricted`. The
@@ -98,84 +142,13 @@ disabled, when the country is not the configured domestic one (Nias can only
 verify Croatian buyers, so a foreign order cannot be held to a check it has no
 way of passing), or when nothing in the cart is age-restricted.
 
-Once the order exists, record the proof:
+## Documentation
 
-```php
-$nias->attachOrder($order, $verificationId);
-```
-
-## Files
-
-### `src/Contracts/IsAgeRestricted.php`
-The package's one frozen public contract, implemented by the consuming app.
-Deliberately tiny and Eloquent-free. `isAgeRestricted()` describes the
-*product*, never the buyer — it means "this item requires an adult", not "this
-buyer has been verified".
-
-### `src/AgeVerificationManager.php`
-The application-facing entry point, injected where it is needed.
-
-- `assertVerified()` — the whole checkout check in one call: country, then
-  eligibility, then the verification's existence, adulthood and expiry.
-- `attachOrder()` — links a verification to an order once the order exists.
-
-### `src/AgeVerificationService.php`
-The Nias protocol flow.
-
-- `getRedirectUrl()` — generates PKCE, `state` and `nonce`, and builds the
-  authorize URL.
-- `complete()` — exchanges the code and validates the ID token.
-
-### `src/Pkce.php`
-Random value generation for the OAuth flow. Separate from the service because it
-is pure, static, and the easiest part to unit test.
-
-Each piece exists for a specific attack:
-
-- `verifier()` / `challenge()` — PKCE. Proves the party redeeming the code is
-  the one that started the flow. Nias is a public client with no secret
-  (`token_endpoint_auth_methods_supported: ["none"]`), so PKCE is the only thing
-  binding the exchange.
-- `state()` — CSRF. Returned unchanged by Nias; a callback bearing an unissued
-  `state` is forged.
-- `nonce()` — replay. Embedded in the ID token, so a captured token cannot be
-  replayed into a later flow.
-
-All use `random_bytes`. The challenge is unpadded base64url of the raw SHA-256
-digest — hex or padded output produces a challenge Nias rejects.
-
-### `src/Enums/`
-The protocol constants: `ResponseType` (`code`), `Scope` (`age.alcohol`),
-`CodeChallengeMethod` (`S256`), `GrantType` (`authorization_code`). Each has a
-single case and a `getDefault()`, since Nias accepts exactly one legal value for
-each.
-
-### `src/Http/Controllers/AgeVerificationController.php`
-Both HTTP endpoints.
-
-- `initialize()` — returns an authorize URL. Takes no cart: the frontend decides
-  when a verification is worth starting, and starting a needless one costs
-  nothing since checkout re-decides against the order's own items.
-- `callback()` — where Nias sends the buyer back. Exchanges the code, validates
-  the ID token, records the outcome, and redirects to the configured frontend
-  target.
-
-### `src/NiasAgeVerificationServiceProvider.php`
-Merges config, registers the publish tag, and loads the routes under a fixed
-`api/age-verification` prefix. Auto-discovered via `composer.json`'s
-`extra.laravel`, so installing the package is the whole setup.
-
-### `routes/api.php`
-`POST /` and `GET /callback`, both under the `api/age-verification` prefix. The
-callback is a `GET` because it receives
-a browser redirect from Nias, not a request from your frontend.
-
-### `config/nias-age-verification.php`
-- `country` — the domestic country code (`HR`). Orders from anywhere else skip
-  the check.
-- `base_url` — the Nias environment, defaulting to test. All endpoints hang off
-  it (`/authorize`, `/token`, `/jwks`) and it doubles as the expected `iss`.
-- `client_id` — issued by MPUDT after registering with MINGO.
-- `redirect_uri` — the full public callback URL, sent both in the authorize
-  redirect and again in the token exchange. Both must match the registered
-  value exactly.
+| | |
+| --- | --- |
+| [Installation](docs/installation.md) | Requirements, publishing, migrations, contracts |
+| [Configuration](docs/configuration.md) | Every config key and what changing it does |
+| [Integration guide](docs/integration.md) | Trust model, checkout, testing, production checklist |
+| [HTTP endpoints](docs/http.md) | Both routes and the frontend contract |
+| [API reference](docs/api.md) | Classes, contracts, models, DTOs |
+| [Errors](docs/errors.md) | Exception hierarchy, error codes, diagnosing |
