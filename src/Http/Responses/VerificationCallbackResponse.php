@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace LeonLav77\NiasAgeVerification\Http\Responses;
 
+use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Http\RedirectResponse;
 use LeonLav77\NiasAgeVerification\Enums\VerificationError;
@@ -13,12 +14,13 @@ class VerificationCallbackResponse implements Responsable
 	protected function __construct(
 		protected ?VerificationError $error = null,
 		protected ?string $verificationId = null,
+		protected ?CarbonImmutable $expiresAt = null,
 	) {
 	}
 
-	public static function approved(string $verificationId): self
+	public static function approved(string $verificationId, CarbonImmutable $expiresAt): self
 	{
-		return new self(verificationId: $verificationId);
+		return new self(verificationId: $verificationId, expiresAt: $expiresAt);
 	}
 
 	public static function denied(VerificationError $error): self
@@ -43,6 +45,9 @@ class VerificationCallbackResponse implements Responsable
 
 		$url = config('nias-age-verification.callback_approved');
 
-		return new RedirectResponse($url . '?' . http_build_query(['verification_id' => $this->verificationId]));
+		return new RedirectResponse($url . '?' . http_build_query([
+			'verification_id' => $this->verificationId,
+			'expires_at' => $this->expiresAt->toIso8601String(),
+		]));
 	}
 }

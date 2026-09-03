@@ -58,6 +58,6 @@ class AgeVerificationController
 			return VerificationCallbackResponse::denied(VerificationError::NOT_ADULT);
 		}
 
-		return VerificationCallbackResponse::approved($result->verificationId);
+		return VerificationCallbackResponse::approved($result->verificationId, $result->expiresAt);
 	}
 }

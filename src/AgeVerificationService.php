@@ -65,6 +65,11 @@ class AgeVerificationService
 
         $verification = AgeVerification::record($claims, $idToken);
 
-        return new VerificationResultDto($claims, $idToken, (string) $verification->getKey());
+        return new VerificationResultDto(
+            $claims,
+            $idToken,
+            (string) $verification->getKey(),
+            $verification->expires_at,
+        );
     }
 }
